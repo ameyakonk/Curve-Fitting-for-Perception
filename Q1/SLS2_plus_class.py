@@ -62,6 +62,7 @@ class SLS:
             plt.plot(x, ans, 'r')
             plt.show()
         #    print(theta)
+            plt.ioff()
 
 p1 = SLS(cv2.VideoCapture('ball_video1.mp4'))
 p1.video_main()
