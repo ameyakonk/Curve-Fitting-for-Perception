@@ -16,11 +16,14 @@ class SVD:
         values = np.sort(values)
         n_mat = np.zeros((len(mat),len(mat)))
         for i in range (len(mat)):
-            n_mat[:, i] = dict_[values[i]]
+            n_mat[:, i] = dict_[values[len(mat)-i-1]]
+            if i == 2 or i == 7:
+                n_mat[:, i] = -n_mat[:, i]    
         return n_mat
         #values = np.sort(values)
         
     def svd(self):
+        print("Processing...")
         x = [0, 5, 150, 150, 5]
         y = [0, 5, 5, 150, 150]
         xp = [0, 100, 200, 220, 100]
@@ -38,8 +41,12 @@ class SVD:
         eig2, V = LA.eig(A.transpose().dot(A))
         #print(eig1)
         #print(eig2)
-        #U = self.sortArr(U, eig1)
+        U = self.sortArr(U, eig1)
         #V = self.sortArr(V, eig2)
+        V = -V
+        
+        V[:, 4] = -V[:, 4]
+        V[:, 6] = -V[:, 6]
         
         eig1 = eig1**0.5
         eig1 = np.sort(eig1)[::-1]
@@ -47,16 +54,13 @@ class SVD:
         val = 0
         for i in range(8):
             lambda_[i, i] = eig1[i]
-        #ans = (U.dot(lambda_)).dot(V.transpose())
-        U_, S_, V_ = np.linalg.svd(A)
-        ans = (U_.dot(lambda_)).dot(V_)
-        
-        print(V.T)
+        ans = (U.dot(lambda_)).dot(V.T)
+       
+        print(U)
         print(" ")
-        print(V_)
-        
-        #ans = (V.dot(lambda_)).dot(U.transpose())
-        #print(ans)
-        #print(A)
+        print(lambda_)
+        print(" ")
+        print(V)
+        print("Done!!!")
 p1 = SVD()
 p1.svd()

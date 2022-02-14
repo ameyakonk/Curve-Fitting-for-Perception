@@ -10,6 +10,7 @@ import csv
 class Covariance:
         
     def readFile(self):
+        print("Processing...")
         file = open('ENPM673_hw1_linear_regression_dataset - Sheet1.csv')
         type(file)
         csvreader = csv.reader(file)
@@ -31,15 +32,8 @@ class Covariance:
         x_mat_var = self.variance(x_mat, x_mat_avg)
         y_mat_var = self.variance(y_mat, y_mat_avg)
 
-        print("X_Variance", end=" ")
-        print(x_mat_var)
-        print("Y_Variance", end=" ")
-        print(y_mat_var)
-
         covariance = self.covariance(x_mat, x_mat_avg, y_mat, y_mat_avg)
-        print("Covariance", end=" ")
-        print(covariance)
-
+       
         covariance_mat = np.array([[x_mat_var, covariance],[covariance, y_mat_var]])
         print("Covariance Matrix", end=" ")
         print(covariance_mat)
@@ -74,9 +68,14 @@ class Covariance:
         origin = [0, 0]
         eig_vec1 = eigen_vector[:,0]
         eig_vec2 = eigen_vector[:,1]
-        plt.quiver(*origin, *eig_vec1, color=['r'], scale=21)
-        plt.quiver(*origin, *eig_vec2, color=['b'], scale=21)
+        plt.quiver(*origin, *eig_vec1, color=['r'], scale=21, label = "eigenvector1")
+        plt.quiver(*origin, *eig_vec2, color=['b'], scale=21, label = "eigenvector2")
+        plt.xlabel('age')
+        plt.ylabel('charges')
         plt.scatter(xPoints, yPoints)
+        
+        plt.legend()
+        print("Done...")
         plt.show()
     
 instance = Covariance()

@@ -40,7 +40,6 @@ class LineFitter:
     def normalise(self, mat):
         for i in range(len(mat)):
             mat[i] = (mat[i] - min(mat))/(max(mat) - min(mat))
-            #print(mat[i])
         return mat
 
     def denormalise(self, mat, min_, max_):
@@ -74,10 +73,8 @@ class LineFitter:
 
     def totalleastSquare(self):
         x_mat, y_mat = self.getData()
-        #print(x_mat)
         x_mat = self.normalise(x_mat)
         y_mat = self.normalise(y_mat)
-        #print(x_mat)
         x_mat_avg = self.getAvg(x_mat)
         y_mat_avg = self.getAvg(y_mat)
         U = np.zeros((len(x_mat), 2))
@@ -108,7 +105,6 @@ class LineFitter:
     def costFunction(self, x, y, Theta):
         difference = 0
         cost = 0
-        #print(x)
         for i in range(len(x)):
             h_theta = Theta[0,0] + Theta[1,0]*x[i]
             difference =  (h_theta - y[i])**2
@@ -124,7 +120,6 @@ class LineFitter:
         bestErr = 100000000
         FinalTheta = np.zeros((2,1))
         random_list = list(zip(x_mat, y_mat))
-        #print(random_list)
         
         for i in range(max_Iterations):
             random.shuffle(random_list)
@@ -137,30 +132,61 @@ class LineFitter:
             also_inliers_x = []
             also_inliers_y = []
             thisErr = 0
-            #print(random_x[ransac_minpoint:][0])
             for i in range(len(random_x[ransac_minpoint:])):
                 x_ = random_x[ransac_minpoint:][i]
                 y_ = random_y[ransac_minpoint:][i]
                 h_theta = Theta[0,0] + Theta[1,0]*x_
-                #print((y_ - h_theta)**2)
                 if (y_ - h_theta)**2 < ransac_threshold:
                     also_inliers_x.append(x_)
                     also_inliers_y.append(y_)
             
             also_inliers_x = also_inliers_x + random_x[ransac_minpoint:]
             also_inliers_y = also_inliers_y + random_y[ransac_minpoint:]
-            #print(also_inliers_x)
-            #print(also_inliers_y)
             
             if len(also_inliers_x) > ransac_minpoint:
                 x,y,xPoints,yPoints,Theta_updated = self.leastSquare(also_inliers_x, also_inliers_y)
                 thisErr = self.costFunction(also_inliers_x, also_inliers_y, Theta_updated)
-                #print(thisErr)
                 if thisErr < bestErr:
                     bestErr = thisErr
                     FinalTheta = np.array(Theta_updated)
-                #print(Theta_updated)
-        #print(FinalTheta)
+        x = np.linspace(0.3,1,50)
+        y = FinalTheta[0] + FinalTheta[1]*x
+
+        y = self.denormalise(y, self.min_y, self.max_y)
+        x = self.denormalise(x, self.min_x, self.max_x)
+        
+        return x, y
+    
+    def RANSAC_(self):
+        max_Iterations = 50
+        ransac_minpoint = 10 #5
+        ransac_threshold = 0.03 #5000
+        d = 0
+        x_mat, y_mat = self.getData()
+        FinalTheta = np.zeros((2,1))
+        random_list = list(zip(x_mat, y_mat))
+        
+        for i in range(max_Iterations):
+            random.shuffle(random_list)
+            unzipped_object = zip(*random_list)
+            temp = list(unzipped_object)
+            random_x = list(temp[0])
+            random_y = list(temp[1])
+            
+            x,y,xPoints,yPoints,Theta = self.leastSquare(random_x[:ransac_minpoint], random_y[:ransac_minpoint])
+            count = 0
+            thisErr = 0
+            for i in range(len(random_x[ransac_minpoint:])):
+                x_ = random_x[ransac_minpoint:][i]
+                y_ = random_y[ransac_minpoint:][i]
+                h_theta = Theta[0,0] + Theta[1,0]*x_
+                if (h_theta - y_) < ransac_threshold:
+                    count = count + 1
+   
+            if count > d:
+                d = count
+                FinalTheta = Theta
+             
         x = np.linspace(0.3,1,50)
         y = FinalTheta[0] + FinalTheta[1]*x
 
@@ -173,15 +199,19 @@ class LineFitter:
         x_mat, y_mat = self.getData()
         x,y,xPoints,yPoints,_ = self.leastSquare(x_mat, y_mat)
         x_tls, y_tls = self.totalleastSquare()
-        x_ransac, y_ransac = self.RANSAC()
+        x_ransac, y_ransac = self.RANSAC_()
         
         fig = plt.figure(figsize = (12, 7))
-        plt.plot(x, y, 'r')
-        plt.plot(x_tls, y_tls, 'k-')
-        plt.plot(x_ransac, y_ransac, 'g')
+        plt.plot(x, y, 'r', label="Least Square")
+        plt.plot(x_tls, y_tls, 'g', label="Total Least Square")
+        plt.plot(x_ransac, y_ransac, 'k-', label="RANSAC")
+
+        plt.xlabel("age")
+        plt.ylabel("charge")
         
         plt.scatter(xPoints, yPoints)
         print("Done!!!")
+        plt.legend()
         plt.show()
 
         
