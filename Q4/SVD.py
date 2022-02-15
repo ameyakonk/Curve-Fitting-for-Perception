@@ -55,12 +55,21 @@ class SVD:
         for i in range(8):
             lambda_[i, i] = eig1[i]
         ans = (U.dot(lambda_)).dot(V.T)
-       
+
+        Homography_mat = np.reshape(V[:,8], (3, 3))
         print(U)
         print(" ")
         print(lambda_)
         print(" ")
         print(V)
+        print("A")
+        print(A)
+        print("AAT ")
+        print(A.dot(A.T))
+        print("ATA")
+        print(A.T.dot(A))
+        print("HM")
+        print(Homography_mat)
         print("Done!!!")
 p1 = SVD()
 p1.svd()
